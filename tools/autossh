@@ -1,0 +1,39 @@
+#!/bin/bash
+# ------------------------------------
+# A simple tool for quick login system
+# Usage:  ./auto-ssh  your-hostname
+# ------------------------------------
+
+HOST=$1
+
+case ${HOST} in
+	# my workstation
+	wangli) ssh -l wangli 10.66.12.173;;
+	
+	# openstack system 
+	fedora) ssh -l fedora 10.3.13.202;;
+
+	# raspberry pi3
+	pi) ssh -o stricthostkeychecking=no -l root 10.66.12.105;;
+
+	pi-scan)
+	  nmap -sP 10.66.13.102/24  >/dev/null
+	  ssh -l root $(grep 'b8:27:eb:ea:86:56' /proc/net/arp | cut -d ' ' -f 1)
+	;;
+
+	# kg-team data server passwd: redhat
+	kg) ssh -l kernelqe ibm-x3250m4-03.rhts.eng.pek2.redhat.com;;
+
+	# ltp helper
+	henry) ssh -o stricthostkeychecking=no -l root ltp-helper.usersys.redhat.com;;
+
+	# login beaker system
+	*)
+		ssh -o stricthostkeychecking=no -l root $HOST && exit 0
+		NUM=cat ~/.ssh/known_hosts -n |grep $HOST |awk '{print $1}'
+		if [ $? -eq 0 ];then
+			sed -i ${NUM}d .ssh/known_hosts
+		fi
+		ssh -o stricthostkeychecking=no -l root $HOST
+	;;
+esac
